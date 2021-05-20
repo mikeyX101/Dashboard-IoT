@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +21,7 @@ namespace DashboardIoT
 			Host.CreateDefaultBuilder(args)
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
+					webBuilder.UseUrls("192.168.2.114:5000", "192.168.2.114:5001")
 					webBuilder.UseStartup<Startup>();
 				});
 	}
