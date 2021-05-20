@@ -21,7 +21,7 @@ namespace DashboardIoT
 			Host.CreateDefaultBuilder(args)
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
-					webBuilder.UseUrls("192.168.2.114:5000", "192.168.2.114:5001");
+					webBuilder.UseUrls("http://192.168.2.114:5000", "https://192.168.2.114:5001");
 					webBuilder.UseStartup<Startup>();
 				});
 	}
