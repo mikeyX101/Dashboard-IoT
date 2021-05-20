@@ -1,6 +1,6 @@
 #!/bin/bash
 # Samuel Caron
 
-cd ~/DashboardIoT/DashboardIoT/
+cd ~/Dashboard-IoT/DashboardIoT/
 dotnet ./bin/Release/publish/DashboardIoT.dll
 exit $?
