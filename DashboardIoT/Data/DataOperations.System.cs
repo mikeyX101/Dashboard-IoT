@@ -5,15 +5,21 @@ namespace DashboardIoT.Data
 {
 	public partial class DataOperations
 	{
-		public void AddSystemState(SystemState systemState)
+		public void AddArmedState(ArmedState armedState)
 		{
-			DB.SystemStates.Add(systemState);
+			DB.ArmedStates.Add(armedState);
 			DB.SaveChanges();
 		}
 
 		public void AddCalibratedDistance(CalibratedDistance distance)
 		{
 			DB.CalibratedDistances.Add(distance);
+			DB.SaveChanges();
+		}
+
+		public void AddSilentState(SilentState silentState)
+		{
+			DB.SilentStates.Add(silentState);
 			DB.SaveChanges();
 		}
 	}

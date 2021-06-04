@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace DashboardIoT.Models
 {
-    public class AlarmState : State
-    {
-        public AlarmState() : base() { }
-        public AlarmState(DateTime time, OnOffState state) : base(time, state) { }
+	public class SilentState : State
+	{
+        public SilentState() : base() { }
+        public SilentState(DateTime time, OnOffState state) : base(time, state) { }
     }
 }

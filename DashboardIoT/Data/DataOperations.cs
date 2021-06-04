@@ -31,9 +31,13 @@ namespace DashboardIoT.Data
 			{
 				AddAlarmState(new AlarmState(DateTime.UtcNow, alarmState));
 			}
-			else if (message.Topic == "systemState" && SystemState.TryGetArgs(message.PayloadToUTF8String(), out OnOffState systemState, out bool? isSilent))
+			else if (message.Topic == "armedState" && OnOffStateHelper.TryParse(message.PayloadToUTF8String(), out OnOffState armedState) && armedState != OnOffState.Invalid)
 			{
-				AddSystemState(new SystemState(DateTime.UtcNow, systemState, isSilent.Value));
+				AddArmedState(new ArmedState(DateTime.UtcNow, armedState));
+			}
+			else if (message.Topic == "silentState" && OnOffStateHelper.TryParse(message.PayloadToUTF8String(), out OnOffState silentState) && silentState != OnOffState.Invalid)
+			{
+				AddSilentState(new SilentState(DateTime.UtcNow, silentState));
 			}
 			else if (message.Topic == "calibratedDistance" && float.TryParse(message.PayloadToUTF8String(), NumberStyles.Any, CultureInfo.InvariantCulture, out float calibratedDistance))
 			{
