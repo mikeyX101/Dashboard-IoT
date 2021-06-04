@@ -1,12 +1,7 @@
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
+using MQTTnet.AspNetCore.Extensions;
 
 namespace DashboardIoT
 {
@@ -14,6 +9,11 @@ namespace DashboardIoT
 	{
 		public static void Main(string[] args)
 		{
+			if (!System.IO.Directory.Exists("App_Data"))
+			{
+				System.IO.Directory.CreateDirectory("App_Data");
+			}
+
 			CreateHostBuilder(args).Build().Run();
 		}
 
@@ -21,7 +21,12 @@ namespace DashboardIoT
 			Host.CreateDefaultBuilder(args)
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
-					webBuilder.UseUrls("http://192.168.2.114:5000", "https://192.168.2.114:5001");
+					webBuilder.UseKestrel(options =>
+					{
+						options.ListenAnyIP(5000);
+						options.ListenAnyIP(5001);
+						options.ListenAnyIP(1883, listenOptions => listenOptions.UseMqtt()); // 8883 for secured
+					});
 					webBuilder.UseStartup<Startup>();
 				});
 	}
