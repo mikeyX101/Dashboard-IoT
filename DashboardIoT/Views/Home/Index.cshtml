@@ -1,20 +1,281 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
+@section Scripts {
+    <link rel="stylesheet" type="text/css" href="~/lib/datatables/datatables.min.css" />
+
+    <script type="text/javascript" src="~/lib/datatables/datatables.min.js"></script>
+}
+
+<style type="text/css">
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .table td, .table th {
+        padding: 5px !important;
+    }
+
+    .btn-inline {
+        margin-left: 5px;
+    }
+</style>
+
 <script type="text/javascript">
-    $(document).ready(e => {
-        $("#mqttTest").click(e => {
+    $(document).ready(() => {
+        const systemStatus = $("#systemStatus");
+        const calibratedDistance = $("#calibratedDistance");
+        const alarmState = $("#alarmState");
+        const armedState = $("#armedState");
+        const silentState = $("#silentState");
+
+        const alarmCols = [
+            {
+                responsivePriority: 1,
+                className: "all",
+                data: "time",
+                title: "Time (UTC)"
+            }
+        ];
+        const stateCols = [
+            {
+                responsivePriority: 1,
+                className: "all",
+                data: "time",
+                title: "Time (UTC)"
+            },
+            {
+                responsivePriority: 2,
+                className: "all",
+                data: "recordedState",
+                title: "State",
+                defaultContent: "-",
+                render: (data, type, row) => {
+                    if ((data == 0 || data == 1) && type == "display") {
+                        if (data == 1) {
+                            return "On";
+                        }
+                        else {
+                            return "Off"
+                        }
+                    }
+                    return data;
+                },
+                createdCell: (cell, cellData) => {
+                    let textClass;
+                    if (cellData == 1) {
+                        textClass = "text-success";
+                    }
+                    else {
+                        textClass = "text-danger";
+                    }
+
+                    $(cell).addClass(textClass);
+                }
+            }
+        ];
+
+        const alarmsTableApi = initDataTable($("#alarmsTable"), alarmCols);
+        const alarmStatesTableApi = initDataTable($("#alarmStatesTable"), stateCols);
+        const armedStatesTableApi = initDataTable($("#armedStatesTable"), stateCols);
+        const silentStatesTableApi = initDataTable($("#silentStatesTable"), stateCols);
+
+        $("#refreshButton").click(data);
+        const disarmButton = $("#disarmButton").click(() => {
             $.ajax({
-                url: "/Home/MQTTTest",
-                method: "POST"
+                url: "@Url.Action("Disarm", "Home")",
+                method: "POST",
+                success: data
             });
-        }); 
+        });
+        $("#armedButton").click(() => {
+            $.ajax({
+                url: "@Url.Action("ToggleArmed", "Home")",
+                method: "POST",
+                success: data
+            });
+        });
+        $("#silentButton").click(() => {
+            $.ajax({
+                url: "@Url.Action("ToggleSilent", "Home")",
+                method: "POST",
+                success: data
+            });
+        });
+        data();
+
+        function data() {
+            $.ajax({
+                url: "@Url.Action("Data", "Home")",
+                method: "POST",
+                success: json => {
+                    populateSystemStatus(json.systemConnected, json.lastCalibratedDistance, json.lastAlarmState, json.lastArmedState, json.lastSilentState);
+                    populateDataTable(alarmsTableApi, json.alarmData);
+                    populateDataTable(alarmStatesTableApi, json.alarmStateData);
+                    populateDataTable(armedStatesTableApi, json.armedStateData);
+                    populateDataTable(silentStatesTableApi, json.silentStateData);
+                }
+            });
+        }
+
+        function populateSystemStatus(systemConnected, lastCalibratedDistance, lastAlarmState, lastArmedState, lastSilentState) {
+            if (systemConnected) {
+                systemStatus
+                    .addClass("text-success")
+                    .removeClass("text-danger")
+                    .text("Online");
+            }
+            else {
+                systemStatus
+                    .removeClass("text-success")
+                    .addClass("text-danger")
+                    .text("Offline");
+            }
+
+            if (lastCalibratedDistance >= 0) {
+                calibratedDistance
+                    .addClass("text-success")
+                    .removeClass("text-danger")
+                    .text(lastCalibratedDistance + " cm");
+            }
+            else {
+                calibratedDistance
+                    .removeClass("text-success")
+                    .addClass("text-danger")
+                    .text("Unset");
+            }
+
+            if (lastAlarmState) {
+                alarmState
+                    .removeClass("text-success")
+                    .addClass("text-danger")
+                    .text("Triggered!");
+                disarmButton.removeAttr("disabled", "disabled");
+            }
+            else {
+                alarmState
+                    .addClass("text-success")
+                    .removeClass("text-danger")
+                    .text("Clear");
+                disarmButton.attr("disabled", "disabled");
+            }
+
+            if (lastArmedState) {
+                armedState
+                    .addClass("text-success")
+                    .removeClass("text-danger")
+                    .text("Armed");
+            }
+            else {
+                armedState
+                    .removeClass("text-success")
+                    .addClass("text-danger")
+                    .text("Not armed");
+            }
+
+            if (lastSilentState) {
+                silentState
+                    .addClass("text-success")
+                    .removeClass("text-danger")
+                    .text("Silent");
+            }
+            else {
+                silentState
+                    .removeClass("text-success")
+                    .addClass("text-danger")
+                    .text("Not silent");
+            }
+        }
+
+        function populateDataTable(tableApi, data) {
+            tableApi.clear().rows.add(data).draw();
+        }
+
+        function initDataTable(table, cols) {
+            return table.DataTable({
+                deferRender: true,
+                processing: true,
+                stateSave: false,
+                ordering: true,
+                responsive: true,
+                autoWidth: false,
+                headerCallback: (thead) => {
+                    $(thead).addClass("dt-header");
+                },
+                columns: cols
+            });
+        }
     });
 </script>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <button id="mqttTest" class="btn btn-primary">Test MQTT</button>
+<div class="text-center row justify-content-around">
+    <div class="form-group col-12 col-sm-12 col-md-12 col-md-12 col-lg-12 col-xl-12">
+        <button id="refreshButton" class="btn btn-primary">Refresh</button>
+    </div>
+    <div class="card col-11 col-sm-11 col-md-11 col-md-5 col-lg-5 col-xl-5">
+        <div class="card-body">
+            <h3 class="card-title">Current System Status</h3>
+            <div class="form-group">
+                <p>System Connected: <span id="systemStatus" class="font-weight-bold"></span></p>
+            </div>
+            <div class="form-group">
+                <p>Last reported calibrated distance: <span id="calibratedDistance" class="font-weight-bold"></span></p>
+            </div>
+            <div class="form-group">
+                <p>
+                    Last reported alarm state: <span id="alarmState" class="font-weight-bold"></span> 
+                    <button id="disarmButton" class="btn btn-primary btn-inline">Disarm</button>
+                </p>
+            </div>
+            <div class="form-group">
+                <p>
+                    Last reported armed state: <span id="armedState" class="font-weight-bold"></span>
+                    <button id="armedButton" class="btn btn-primary btn-inline">Toggle Armed</button>
+                </p>
+            </div>
+            <div class="form-group">
+                <p>
+                    Last reported silent state: <span id="silentState" class="font-weight-bold"></span>
+                    <button id="silentButton" class="btn btn-primary btn-inline">Toggle Silent</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card col-11 col-sm-11 col-md-11 col-md-5 col-lg-5 col-xl-5">
+        <div class="card-body">
+            <h3 class="card-title">Triggered Alarms</h3>
+            <div class="form-group">
+                <table id="alarmsTable" class="table table-striped table-bordered" style="width: 100%;"></table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card col-11 col-sm-11 col-md-11 col-md-5 col-lg-5 col-xl-5">
+        <div class="card-body">
+            <h3 class="card-title">Alarm States</h3>
+            <div class="form-group">
+                <table id="alarmStatesTable" class="table table-striped table-bordered" style="width: 100%;"></table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card col-11 col-sm-11 col-md-11 col-md-5 col-lg-5 col-xl-5">
+        <div class="card-body">
+            <h3 class="card-title">Armed States</h3>
+            <div class="form-group">
+                <table id="armedStatesTable" class="table table-striped table-bordered" style="width: 100%;"></table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card col-11 col-sm-11 col-md-11 col-md-5 col-lg-5 col-xl-5">
+        <div class="card-body">
+            <h3 class="card-title">Silent States</h3>
+            <div class="form-group">
+                <table id="silentStatesTable" class="table table-striped table-bordered" style="width: 100%;"></table>
+            </div>
+        </div>
+    </div>
 </div>

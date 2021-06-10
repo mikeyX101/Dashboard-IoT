@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace DashboardIoT.Migrations
 {
-    public partial class AddAlarm : Migration
+	public partial class AddAlarm : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

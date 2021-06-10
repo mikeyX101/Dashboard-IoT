@@ -1,4 +1,4 @@
-namespace DashboardIoT.Models
+namespace DashboardIoT.Models.ViewModels
 {
 	public class ErrorViewModel
 	{

@@ -1,9 +1,9 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace DashboardIoT.Migrations
 {
-    public partial class AddMoreModels : Migration
+	public partial class AddMoreModels : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

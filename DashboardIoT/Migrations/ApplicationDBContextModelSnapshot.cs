@@ -104,6 +104,57 @@ namespace DashboardIoT.Migrations
                     b.ToTable("CalibratedDistances");
                 });
 
+            modelBuilder.Entity("DashboardIoT.Models.MqttUser", b =>
+                {
+                    b.Property<uint>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("clientId");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("password");
+
+                    b.Property<string>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("salt");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("username");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("MqttUsers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 2147483647u,
+                            ClientId = "AlarmSystem",
+                            Password = "1qh3UlBFsU9Jw0TAjYitz5iigv9m63/79AafWnWLx/Q=",
+                            PasswordSalt = "w2jQ/QQSfqDe34fRaTVAHQ==",
+                            Username = "AlarmSystem"
+                        });
+                });
+
             modelBuilder.Entity("DashboardIoT.Models.SilentState", b =>
                 {
                     b.Property<uint>("Id")

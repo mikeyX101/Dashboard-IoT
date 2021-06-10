@@ -1,27 +1,31 @@
-﻿using MQTTnet.AspNetCore;
+﻿using DashboardIoT.Extensions;
+using MQTTnet.AspNetCore;
 using MQTTnet.Protocol;
 using MQTTnet.Server;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using DashboardIoT.Extensions;
 
 namespace DashboardIoT.Services
 {
 	public class MqttService : IMqttServerClientConnectedHandler, IMqttServerApplicationMessageInterceptor, IMqttServerConnectionValidator, IMqttServerClientDisconnectedHandler
 	{
-		public IMqttServer MQTT { get; private set; }
+		private static string AllowedClientId => "AlarmSystem";
 
 		public void ConfigureMqttServerOptions(AspNetMqttServerOptionsBuilder options)
 		{
-			options.WithConnectionValidator(this);
-			options.WithApplicationMessageInterceptor(this);
+			options.WithoutDefaultEndpoint()
+				.WithEncryptedEndpoint()
+				.WithEncryptedEndpointPort(8883)
+				.WithEncryptionCertificate(new X509Certificate2(Environment.GetEnvironmentVariable("IOT_MQTT_CERT"), Environment.GetEnvironmentVariable("IOT_MQTT_PASS"), X509KeyStorageFlags.Exportable))
+				.WithEncryptionSslProtocol(System.Security.Authentication.SslProtocols.Tls12)
+
+				.WithConnectionValidator(this)
+				.WithApplicationMessageInterceptor(this);
 		}
 
 		public void ConfigureMqttServer(IMqttServer mqtt)
 		{
-			MQTT = mqtt;
 			mqtt.ClientConnectedHandler = this;
 			mqtt.ClientDisconnectedHandler = this;
 		}
@@ -50,25 +54,24 @@ namespace DashboardIoT.Services
 
 		public Task ValidateConnectionAsync(MqttConnectionValidatorContext context)
 		{
-			if (context.ClientId.Length < 10)
+			Data.DataOperations db = new();
+			Models.MqttUser mqttUser = db.GetMqttUserByClientId(AllowedClientId);
+			if (context.ClientId != mqttUser.ClientId)
 			{
 				context.ReasonCode = MqttConnectReasonCode.ClientIdentifierNotValid;
-				Console.WriteLine("Invalid client id");
-				return Task.FromException(new ArgumentException("Invalid client id"));
+				Console.WriteLine("Invalid ClientId");
 			}
 
-			if (false && context.Username != "mySecretUser")
+			if (context.Username != mqttUser.Username)
 			{
 				context.ReasonCode = MqttConnectReasonCode.BadUserNameOrPassword;
 				Console.WriteLine("Invalid Username");
-				return Task.FromException(new UnauthorizedAccessException("Invalid Username"));
 			}
 
-			if (false && context.Password != "mySecretPassword")
+			if (!Utils.Hashing.TryHash(context.Password, mqttUser.PasswordSalt, out string password) || password != mqttUser.Password)
 			{
 				context.ReasonCode = MqttConnectReasonCode.BadUserNameOrPassword;
 				Console.WriteLine("Invalid Password");
-				return Task.FromException(new UnauthorizedAccessException("Invalid Password"));
 			}
 
 			context.ReasonCode = MqttConnectReasonCode.Success;

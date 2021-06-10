@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MQTTnet.AspNetCore;
 using MQTTnet.AspNetCore.Extensions;
-using System.Linq;
 
 namespace DashboardIoT
 {
@@ -24,16 +23,15 @@ namespace DashboardIoT
 		{
 			services.AddControllersWithViews();
 
-			services.AddMqttConnectionHandler();
+			services.AddMqttTcpServerAdapter();
 			services.AddConnections();
+			services.AddMvc().AddNewtonsoftJson();
 
 			services.AddSingleton<MqttService>();
 			services.AddHostedMqttServerWithServices(options => {
 				MqttService s = options.ServiceProvider.GetRequiredService<MqttService>();
 				s.ConfigureMqttServerOptions(options);
 			});
-			services.AddMqttConnectionHandler();
-			services.AddMqttWebSocketServerAdapter();
 
 			services.AddEntityFrameworkSqlite().AddDbContext<ApplicationDBContext>();
 		}
@@ -48,7 +46,6 @@ namespace DashboardIoT
 			else
 			{
 				app.UseExceptionHandler("/Home/Error");
-				app.UseHttpsRedirection();
 				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 				app.UseHsts();
 
@@ -58,6 +55,8 @@ namespace DashboardIoT
 					scope.ServiceProvider.GetRequiredService<Data.ApplicationDBContext>().Database.Migrate();
 				}
 			}
+			app.UseHttpsRedirection();
+
 			app.UseStaticFiles();
 
 			app.UseRouting();

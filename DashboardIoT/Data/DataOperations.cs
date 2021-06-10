@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using DashboardIoT.Extensions;
+﻿using DashboardIoT.Extensions;
 using DashboardIoT.Models;
+using System;
+using System.Globalization;
 
 namespace DashboardIoT.Data
 {
 	public partial class DataOperations
 	{
-		public ApplicationDBContext DB;
+		private readonly ApplicationDBContext DB;
 
 		public DataOperations()
 		{
