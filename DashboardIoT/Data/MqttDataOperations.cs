@@ -1,8 +1,8 @@
 ﻿using DashboardIoT.Extensions;
-using System.Threading.Tasks;
+using DashboardIoT.Models;
 using MQTTnet;
 using MQTTnet.Client.Publishing;
-using DashboardIoT.Models;
+using System.Threading.Tasks;
 
 namespace DashboardIoT.Data
 {

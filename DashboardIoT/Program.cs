@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-
-using MQTTnet.AspNetCore.Extensions;
 using System.Net;
 
 namespace DashboardIoT
@@ -28,9 +26,10 @@ namespace DashboardIoT
 						{
 							listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
 							
-							listenOptions.UseHttps(System.Environment.GetEnvironmentVariable("IOT_HTTPS_CERT"), System.Environment.GetEnvironmentVariable("IOT_HTTPS_PASS"), httpsOptions => httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12);
+							listenOptions.UseHttps(System.Environment.GetEnvironmentVariable("IOT_HTTPS_CERT"), System.Environment.GetEnvironmentVariable("IOT_HTTPS_PASS"), 
+								httpsOptions => httpsOptions.SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+							);
 						});
-						//options.ListenAnyIP(8883, listenOptions => listenOptions.UseMqtt()); // 1883 for unsecured, 8883 for secured
 					});
 					webBuilder.UseStartup<Startup>();
 				});
