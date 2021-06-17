@@ -56,25 +56,24 @@ namespace DashboardIoT.Services
 		{
 			Data.DataOperations db = new();
 			Models.MqttUser mqttUser = db.GetMqttUserByClientId(AllowedClientId);
+			context.ReasonCode = MqttConnectReasonCode.Success;
+
 			if (context.ClientId != mqttUser.ClientId)
 			{
 				context.ReasonCode = MqttConnectReasonCode.ClientIdentifierNotValid;
 				Console.WriteLine("Invalid ClientId");
 			}
-
-			if (context.Username != mqttUser.Username)
+			else if (context.Username != mqttUser.Username)
 			{
 				context.ReasonCode = MqttConnectReasonCode.BadUserNameOrPassword;
 				Console.WriteLine("Invalid Username");
 			}
-
-			if (!Utils.Hashing.TryHash(context.Password, mqttUser.PasswordSalt, out string password) || password != mqttUser.Password)
+			else if (!Utils.Hashing.TryHash(context.Password, mqttUser.PasswordSalt, out string password) || password != mqttUser.Password)
 			{
 				context.ReasonCode = MqttConnectReasonCode.BadUserNameOrPassword;
 				Console.WriteLine("Invalid Password");
 			}
 
-			context.ReasonCode = MqttConnectReasonCode.Success;
 			return Task.CompletedTask;
 		}
 	}
